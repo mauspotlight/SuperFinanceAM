@@ -619,7 +619,7 @@ function heroExtra(k){
   const row=(k1,v,sub)=>`<div class="hx-r"><span>${k1}</span><span class="hx-v"><b>${v}</b>${sub?`<small>${sub}</small>`:''}</span></div>`;
   return row('🇵🇪 Gastado en soles',money(pen))
     +row('🇺🇸 Gastado en dólares','US$ '+fmt(usd),usd?'= '+money(usdPen)+' · cambio prom. '+fmtRate(avg):'')
-    +OWNERS.map(o=>row(`<span class="plate xs" style="--c:${col(o.color)}"></span> Pagado por ${o.name}`,money(own[o.id]))).join('')
+    +OWNERS.map(o=>row(`<span class="plate xs" style="--c:${col(o.color)}"></span> Anotado por ${o.name}`,money(own[o.id]))).join('')
     +(noM?row('Sin método de pago',money(noM)):'')
     +row('🧾 Gastos anotados',String(cnt),cnt?'Promedio '+money(Math.round(entriesOf(k).reduce((a,e)=>a+Number(e.amount),0)/cnt*100)/100)+' c/u':'');
 }
