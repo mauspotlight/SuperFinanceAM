@@ -1192,7 +1192,8 @@ function backupClosedCycle(){
     gastosCol=root.collection('gastos');
     setSync('off','Conectando…');
     const onErr=e=>{console.error(e);setSync('err','Sin acceso a la nube')};
-    root.onSnapshot(snap=>{
+    /* includeMetadataChanges: avisa también cuando el servidor confirma (si no, se queda en "Sin conexión") */
+    root.onSnapshot({includeMetadataChanges:true},snap=>{
       if(snap.metadata.hasPendingWrites)return;
       if(!snap.exists){
         if(snap.metadata.fromCache){setSync('off','Sin conexión');return}
@@ -1212,7 +1213,7 @@ function backupClosedCycle(){
       if(!cloudReady){if(remoteEnts)firstLink()}else applyRemote();
       setSync(snap.metadata.fromCache?'off':'',snap.metadata.fromCache?'Sin conexión':'Guardado');
     },onErr);
-    gastosCol.onSnapshot(qs=>{
+    gastosCol.onSnapshot({includeMetadataChanges:true},qs=>{
       if(qs.metadata.hasPendingWrites)return;
       remoteEnts=qs.docs.map(x=>x.data());
       if(!cloudReady){if(remoteCfg)firstLink()}else applyRemote();
