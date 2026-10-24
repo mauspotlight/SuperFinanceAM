@@ -898,7 +898,11 @@ document.getElementById('fxLine').onclick=()=>{
     <div class="sh-head"><div><p class="eyebrow">Ajustes</p><h2 id="shTitle">Tipo de cambio de hoy</h2></div>${closeBtn}</div>
     ${fxBoxHtml((fxLast()||{}).rate,fxNoteNew())}
     <p class="sh-note">Cada gasto en dólares guarda el cambio del día en que lo anotan. Cambiar este número no toca lo que ya está registrado.</p>
-    <div class="sh-actions"><button class="btn primary" type="button" id="rtSave">${checkSvg}Usar este cambio hoy</button></div>`);
+    <div class="sh-actions"><button class="btn primary" type="button" id="rtSave">${checkSvg}Usar este cambio hoy</button></div>
+    <span class="lbl">Respaldo</span>
+    <button class="btn ghost" type="button" id="bkDl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar todo el historial</button>
+    <p class="sh-note">${cloudReady?'Todo está guardado en la nube y cada ciclo cerrado tiene su copia de seguridad. Este archivo es una copia extra para guardar donde quieras.':'Descarga un archivo con todos los gastos, fijos y categorías.'}</p>`);
+  sheet.querySelector('#bkDl').onclick=downloadBackup;
   const ri=sheet.querySelector('#rateIn');ri.oninput=()=>{ri.dataset.touched='1'};
   sheet.querySelector('[data-close]').onclick=closeSheet;
   sheet.querySelector('#rtSave').onclick=()=>{const r=parseAmt(ri.value);if(!(r>0)){toast('Escribe el tipo de cambio');return}S.fx={date:todayISO(),rate:Math.round(r*1000)/1000,src:'manual'};save();closeSheet();paintFx();render();toast('✓ Dólar de hoy: S/ '+fmtRate(r))};
@@ -1108,16 +1112,41 @@ function openCats(){
   draw();
 }
 
-/* ===== Nube: Firebase (funciona cuando FIREBASE_CONFIG está completo, como en las otras apps) ===== */
+/* ===== Nube: Firebase =====
+   Cómo se guarda (para que nunca se pise ni se pierda nada):
+   · finanzas/are-mau                  → fijos, pagos de cada ciclo, categorías, métodos y dólar (cada parte se actualiza por separado)
+   · finanzas/are-mau/gastos/{id}      → cada gasto del día a día en su propio documento
+   · finanzas/are-mau/respaldos/{ciclo} → copia de cada ciclo cuando se cierra */
 const syncEl=document.getElementById('sync');
 function setSync(cls,txt){syncEl.hidden=false;syncEl.className='sync'+(cls?' '+cls:'');syncEl.innerHTML='<i></i><span class="t">'+txt+'</span>';syncEl.title=txt}
-function pushCloud(){
-  if(!cloudRef)return;
-  setSync('off','Guardando…');
-  cloudRef.set(JSON.parse(JSON.stringify(S))).then(()=>setSync('','Guardado')).catch(e=>{console.error(e);setSync('err','No se guardó')});
+const CFG_FIELDS=['v','mv','fixed','cats','methods','fx'];
+const clean=o=>JSON.parse(JSON.stringify(o===undefined?null:o));
+let fdb=null,root=null,gastosCol=null,cloudReady=false,remoteCfg=null,remoteEnts=null,base=null,seeding=false;
+/* "base" = lo que la nube ya tiene; solo se sube lo que cambió respecto a eso */
+function snapBase(cfg,ents){
+  base={cfg:{},paid:{},ents:{}};
+  CFG_FIELDS.forEach(f=>base.cfg[f]=JSON.stringify(cfg[f]===undefined?null:cfg[f]));
+  Object.keys(cfg.paid||{}).forEach(k=>{if(cfg.paid[k]&&Object.keys(cfg.paid[k]).length)base.paid[k]=JSON.stringify(cfg.paid[k])});
+  ents.forEach(e=>base.ents[e.id]=JSON.stringify(e));
 }
-function applyRemote(d){if(!d||!d.cats)return;S=d;migrate();lsSet(KEY,JSON.stringify(S));render()}
-function applyPending(){if(pendingRemote){const d=pendingRemote;pendingRemote=null;applyRemote(d)}}
+function pushCloud(){
+  if(!cloudReady||!base)return;
+  const args=[],FP=firebase.firestore.FieldPath,del=firebase.firestore.FieldValue.delete();
+  CFG_FIELDS.forEach(f=>{const j=JSON.stringify(S[f]===undefined?null:S[f]);if(j!==base.cfg[f]){args.push(new FP(f),clean(S[f]));base.cfg[f]=j}});
+  new Set([...Object.keys(S.paid||{}),...Object.keys(base.paid)]).forEach(k=>{
+    const cur=(S.paid||{})[k],j=cur&&Object.keys(cur).length?JSON.stringify(cur):undefined;
+    if(j!==base.paid[k]){args.push(new FP('paid',k),j?clean(cur):del);if(j)base.paid[k]=j;else delete base.paid[k]}
+  });
+  const ops=[];
+  if(args.length)ops.push(b=>b.update(root,...args));
+  const ids=new Set(S.entries.map(e=>e.id));
+  S.entries.forEach(e=>{const j=JSON.stringify(e);if(j!==base.ents[e.id]){const v=clean(e);ops.push(b=>b.set(gastosCol.doc(e.id),v));base.ents[e.id]=j}});
+  Object.keys(base.ents).forEach(id=>{if(!ids.has(id)){ops.push(b=>b.delete(gastosCol.doc(id)));delete base.ents[id]}});
+  if(!ops.length)return;
+  setSync('off','Guardando…');
+  const commits=[];for(let i=0;i<ops.length;i+=450){const b=fdb.batch();ops.slice(i,i+450).forEach(o=>o(b));commits.push(b.commit())}
+  Promise.all(commits).then(()=>setSync('','Guardado')).catch(e=>{console.error(e);setSync('err','No se guardó')});
+}
 function hasData(x){return x&&((x.entries&&x.entries.length)||(x.fixed&&x.fixed.length))}
 function mergeLocal(cloud,local){
   cloud.entries=cloud.entries||[];cloud.paid=cloud.paid||{};cloud.fixed=cloud.fixed||[];
@@ -1127,28 +1156,82 @@ function mergeLocal(cloud,local){
   Object.keys(local.paid||{}).forEach(k=>{cloud.paid[k]=Object.assign({},local.paid[k],cloud.paid[k]||{})});
   return cloud;
 }
+function fromRemote(){const d=Object.assign({},remoteCfg);d.paid=Object.assign({},remoteCfg.paid||{});d.entries=remoteEnts.slice();return d}
+function applyRemote(){
+  if(!cloudReady||!remoteCfg||!remoteEnts)return;
+  if(!sheet.hidden){pendingRemote=true;return}
+  S=fromRemote();migrate();snapBase(remoteCfg,remoteEnts);
+  lsSet(KEY,JSON.stringify(S));render();pushCloud();
+}
+function applyPending(){if(pendingRemote){pendingRemote=null;applyRemote()}}
+function firstLink(){
+  cloudReady=true;cloudRef=root;
+  const linked=lsGet(KEY+'-cloud')==='1';lsSet(KEY+'-cloud','1');
+  const local=S;
+  snapBase(remoteCfg,remoteEnts);
+  S=(!linked&&hasData(local))?mergeLocal(fromRemote(),local):fromRemote();
+  migrate();lsSet(KEY,JSON.stringify(S));render();pushCloud();
+  backupClosedCycle();
+}
+/* copia de seguridad del ciclo que se acaba de cerrar (una sola vez por ciclo) */
+function backupClosedCycle(){
+  const prev=keyAdd(realKey,-1);if(prev<START_KEY)return;
+  const ref=root.collection('respaldos').doc(prev);
+  ref.get({source:'server'}).then(s=>{if(s.exists)return;
+    return ref.set(clean({ciclo:prev,guardado:new Date().toISOString(),gastos:entriesOf(prev),pagos:paidOf(prev),fijos:S.fixed,categorias:S.cats,metodos:S.methods,dolar:S.fx||null}));
+  }).catch(e=>console.warn('respaldo',e));
+}
 (function initCloud(){
   const cfg=window.FIREBASE_CONFIG;
   if(!window.firebase||!cfg||!cfg.projectId||/PEGA/.test(cfg.projectId))return;
   try{
     const app=firebase.apps.length?firebase.app():firebase.initializeApp(cfg);
-    const db=firebase.firestore(app);
-    db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
-    const ref=db.collection('finanzas').doc(window.FIREBASE_DOC||'are-mau');
-    let linked=lsGet(KEY+'-cloud')==='1';
-    const setLinked=()=>{linked=true;lsSet(KEY+'-cloud','1')};
+    fdb=firebase.firestore(app);
+    fdb.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+    root=fdb.collection('finanzas').doc(window.FIREBASE_DOC||'are-mau');
+    gastosCol=root.collection('gastos');
     setSync('off','Conectando…');
-    ref.onSnapshot(snap=>{
+    const onErr=e=>{console.error(e);setSync('err','Sin acceso a la nube')};
+    root.onSnapshot(snap=>{
       if(snap.metadata.hasPendingWrites)return;
-      cloudRef=ref;
-      if(!snap.exists){if(snap.metadata.fromCache){setSync('off','Sin conexión');return}setLinked();pushCloud();return}
+      if(!snap.exists){
+        if(snap.metadata.fromCache){setSync('off','Sin conexión');return}
+        /* nube vacía: se sube lo de este celular, con cada gasto aparte */
+        if(seeding)return;seeding=true;
+        const c=clean(S);delete c.entries;
+        const b=fdb.batch();b.set(root,c);S.entries.slice(0,450).forEach(e=>b.set(gastosCol.doc(e.id),clean(e)));
+        b.commit().catch(onErr);return;
+      }
       const d=snap.data();
-      if(!linked){setLinked();if(hasData(S)){applyRemote(mergeLocal(d,S));pushCloud();return}}
-      if(!sheet.hidden)pendingRemote=d;else applyRemote(d);
+      if(Array.isArray(d.entries)){
+        /* formato anterior (todo junto): cada gasto pasa a su propio documento, sin perder ninguno */
+        const b=fdb.batch();d.entries.slice(0,450).forEach(e=>b.set(gastosCol.doc(e.id),clean(e)));
+        b.update(root,{entries:firebase.firestore.FieldValue.delete()});b.commit().catch(onErr);return;
+      }
+      remoteCfg=d;
+      if(!cloudReady){if(remoteEnts)firstLink()}else applyRemote();
       setSync(snap.metadata.fromCache?'off':'',snap.metadata.fromCache?'Sin conexión':'Guardado');
-    },e=>{console.error(e);setSync('err','Sin acceso a la nube')});
+    },onErr);
+    gastosCol.onSnapshot(qs=>{
+      if(qs.metadata.hasPendingWrites)return;
+      remoteEnts=qs.docs.map(x=>x.data());
+      if(!cloudReady){if(remoteCfg)firstLink()}else applyRemote();
+    },onErr);
   }catch(e){console.error(e);setSync('err','Error de nube')}
 })();
+
+/* descargar todo el historial como archivo */
+async function downloadBackup(){
+  const data=JSON.stringify({app:'SuperFinance casita',descargado:new Date().toISOString(),datos:S},null,2);
+  const filename='superfinance-respaldo-'+todayISO()+'.json';
+  try{const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;if(dl){await dl.save({filename,data});return}}catch(e){return}
+  try{
+    const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1500);
+    toast('✓ Respaldo descargado');
+  }catch(e){toast('No se pudo descargar aquí')}
+}
 
 render();
 refreshFx();
