@@ -318,6 +318,8 @@ button.bill:hover .ed{background:color-mix(in srgb,var(--accent) 18%,transparent
 .okk{display:none;width:44px;height:44px;padding:0;border-radius:50%;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:16px;flex:none}
 input:focus+.okk{display:grid}
 .okk svg{width:24px;height:24px}
+.okk.go{display:grid}
+.okk.go:disabled{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
 .notef{position:relative}
 .notef .field{padding-right:58px}
 .notef .okk{position:absolute;right:5px;top:50%;margin-top:-22px}
@@ -394,7 +396,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 .wz-bar{display:flex;gap:4px;margin-top:8px;width:min(220px,52vw)}
 .wz-bar i{flex:1;height:5px;border-radius:9px;background:var(--line);transition:background .25s ease}
 .wz-bar i.done{background:var(--accent)}
-.wz-bar i.now{background:linear-gradient(90deg,var(--accent) 50%,var(--line) 50%)}
+.wz-bar i.now{background:var(--accent)}
 .wz{margin-top:14px;min-height:300px}
 .stp-q{font-size:34px;font-stretch:76%;font-weight:900;text-transform:uppercase;line-height:1;margin:2px 0 14px}
 .stp.in-r{animation:inR .28s cubic-bezier(.2,.8,.2,1)}
@@ -402,6 +404,19 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 @keyframes inR{from{opacity:0;transform:translateX(28px)}}
 @keyframes inL{from{opacity:0;transform:translateX(-28px)}}
 .wz-cat{margin:12px 2px 0;font-weight:700;color:var(--muted)}
+.kpad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.kpad button{height:56px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line);font-family:var(--display);font-weight:800;font-stretch:85%;font-size:28px;color:var(--ink);display:grid;place-items:center;transition:transform .08s ease,background .08s ease}
+.kpad button.on,.kpad button:active{background:var(--accent-soft);transform:scale(.96)}
+.kpad button[data-k="."]{font-size:34px;line-height:.6}
+.kpad button svg{width:26px;height:26px}
+.padin{caret-color:transparent;cursor:pointer}
+.pad-on{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent)}
+.rate.pad-on input{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.rate.pad-on{box-shadow:none}
+.kpad .kp-done{grid-column:1/-1;height:50px;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-family:var(--body);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+.kpad .kp-done svg{width:20px;height:20px}
+.field.pad-on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+@media (max-height:700px){.kpad button{height:48px}}
 .wz-nav{display:grid;grid-template-columns:auto 1fr;gap:10px;margin-top:20px}
 .wz-nav .btn{width:auto}
 .wz-nav #wzBack[hidden]+#wzNext{grid-column:1/-1}
@@ -711,7 +726,7 @@ function heroExtra(k){
   const row=(k1,v,sub)=>`<div class="hx-r"><span>${k1}</span><span class="hx-v"><b>${v}</b>${sub?`<small>${sub}</small>`:''}</span></div>`;
   return row('🇵🇪 Gastado en soles',money(pen))
     +row('🇺🇸 Gastado en dólares','US$ '+fmt(usd),usd?'= '+money(usdPen)+' · cambio prom. '+fmtRate(avg):'')
-    +OWNERS.map(o=>row(`<span class="plate xs" style="--c:${col(o.color)}"></span> Anotado por ${o.name}`,money(own[o.id]))).join('')
+    +OWNERS.map(o=>row(`<span class="plate xs" style="--c:${col(o.color)}"></span> Pagado por ${o.name}`,money(own[o.id]))).join('')
     +(noM?row('Sin método de pago',money(noM)):'')
     +row('🧾 Gastos anotados',String(cnt),cnt?'Promedio '+money(Math.round(entriesOf(k).reduce((a,e)=>a+Number(e.amount),0)/cnt*100)/100)+' c/u':'');
 }
@@ -938,12 +953,48 @@ document.getElementById('view').addEventListener('click',e=>{
   if(d.delyes){S.entries=S.entries.filter(x=>x.id!==d.delyes);confirmDel=null;save();render();toast('Gasto borrado');return}
 });
 
+/* ---------- teclado numérico propio de la app (nunca abre el teclado del iPhone en los montos) ---------- */
+let padFor=null,padHold=null;
+const DEL_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/></svg>';
+function attachPads(){
+  sheet.querySelectorAll('input[inputmode=decimal]').forEach(i=>{
+    i.setAttribute('inputmode','none');i.readOnly=true;i.classList.add('padin');
+    i.addEventListener('click',()=>showPad(i,{noDone:!!i.closest('.wz')}));
+  });
+}
+function hidePad(){sheet.querySelectorAll('.kpad').forEach(p=>p.remove());sheet.querySelectorAll('.pad-on').forEach(x=>x.classList.remove('pad-on'));if(padFor)padFor.classList.remove('pad-on');padFor=null}
+function showPad(i,opts){
+  opts=opts||{};
+  if(padFor===i&&sheet.querySelector('.kpad'))return;
+  hidePad();padFor=i;
+  const host=i.closest('.money,.rate')||i;host.classList.add('pad-on');
+  const p=document.createElement('div');p.className='kpad';p.setAttribute('role','group');p.setAttribute('aria-label','Teclado numérico');
+  p.innerHTML=['1','2','3','4','5','6','7','8','9','.','0','del'].map(x=>`<button type="button" data-k="${x}" ${x==='del'?'aria-label="Borrar"':''}>${x==='del'?DEL_SVG:x}</button>`).join('')+(opts.noDone?'':`<button type="button" class="kp-done" data-k="ok">${checkSvg}Listo</button>`);
+  (host.parentElement&&host.parentElement.classList.contains('fxbox')?host.parentElement:host).after(p);
+  const dec=i.id==='rateIn'?3:2;
+  const press=k=>{
+    if(k==='ok'){hidePad();return}
+    let v=padFor.value;
+    if(k==='del')v=v.slice(0,-1);
+    else if(k==='.'){if(!v.includes('.'))v=(v||'0')+'.'}
+    else{const d=v.split('.')[1];if(d!==undefined&&d.length>=dec)return;if(v==='0')v='';if(v.replace('.','').length>=8)return;v+=k}
+    padFor.value=v;padFor.dataset.touched='1';padFor.dispatchEvent(new Event('input',{bubbles:true}));
+  };
+  p.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-k]');if(!b)return;e.preventDefault();b.classList.add('on');press(b.dataset.k);
+    if(b.dataset.k==='del'){clearTimeout(padHold);padHold=setTimeout(()=>{if(padFor){padFor.value='';padFor.dispatchEvent(new Event('input',{bubbles:true}))}},550)}});
+  const up=()=>{clearTimeout(padHold);p.querySelectorAll('.on').forEach(x=>x.classList.remove('on'))};
+  p.addEventListener('pointerup',up);p.addEventListener('pointerleave',up);p.addEventListener('pointercancel',up);
+  p.addEventListener('click',e=>{if(e.detail===0){const b=e.target.closest('[data-k]');if(b)press(b.dataset.k)}});
+  if(!opts.noScroll)setTimeout(()=>{const r=p.getBoundingClientRect(),sr=sheet.getBoundingClientRect();if(r.bottom>sr.bottom)sheet.scrollTop+=r.bottom-sr.bottom+12},30);
+}
+
 /* ---------- hoja inferior ---------- */
 const sheet=document.getElementById('sheet'),scrim=document.getElementById('scrim');
 function openSheet(html){
   const was=!sheet.hidden;
   sheet.innerHTML='<div class="grab"></div>'+html;
-  sheet.querySelectorAll('input[inputmode=decimal],#noteIn').forEach(i=>{if(i.id==='noteIn'){const w=document.createElement('div');w.className='notef';i.before(w);w.appendChild(i)}const b=document.createElement('button');b.type='button';b.className='okk';b.innerHTML=checkSvg;b.setAttribute('aria-label','Listo, ocultar teclado');b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('mousedown',e=>e.preventDefault());b.onclick=()=>i.blur();i.after(b)});
+  attachPads();
+  sheet.querySelectorAll('#noteIn').forEach(i=>{const w=document.createElement('div');w.className='notef';i.before(w);w.appendChild(i);const b=document.createElement('button');b.type='button';b.className='okk';b.innerHTML=checkSvg;b.setAttribute('aria-label','Listo, ocultar teclado');b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('mousedown',e=>e.preventDefault());b.onclick=()=>i.blur();i.after(b);i.addEventListener('focus',hidePad)});
   if(was)return;
   sheet.hidden=false;scrim.hidden=false;
   requestAnimationFrame(()=>{sheet.classList.add('on');scrim.classList.add('on')});
@@ -1103,8 +1154,9 @@ function openEntryForm({id,cat}){
 /* ---------- anotar gasto en pasos: una tarjeta a la vez ---------- */
 function openEntry(o){if(o&&o.id)return openEntryForm(o);return openEntryWizard(o||{})}
 function openEntryWizard({cat}){
-  let sel=cat||S.cats[0].id;
-  let meth=methOf(lsGet(KEY+'-meth'))?lsGet(KEY+'-meth'):'';
+  /* todos los pasos son obligatorios: nada viene marcado de antemano */
+  let sel=cat||'';
+  let meth='';
   const cur0=lsGet(KEY+'-cur')==='USD'?'USD':'PEN';
   const k=mKey();
   const defDate=k===realKey?todayISO():startOf(k);
@@ -1115,7 +1167,7 @@ function openEntryWizard({cat}){
     <div class="sh-head"><div><p class="eyebrow" id="wzEye">Anotar gasto</p><div class="wz-bar" aria-hidden="true">${steps.map(()=>'<i></i>').join('')}</div></div>${closeBtn}</div>
     <div class="wz" id="wz">
       ${sec('monto','¿Cuánto fue?',`
-        <div class="money"><span id="curSym">S/</span><input id="amtIn" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" enterkeyhint="done" placeholder="0" autocomplete="off" aria-label="Monto"></div>
+        <div class="money"><span id="curSym">S/</span><input id="amtIn" type="text" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="Monto"></div>
         <div style="margin-top:10px">${curSeg(cur0)}</div>
         <div id="fxWrap">${fxBoxHtml((fxLast()||{}).rate,fxNoteNew())}</div>
         ${cat?`<p class="wz-cat">${esc(catOf(cat).emoji)} ${esc(catOf(cat).name)}</p>`:''}`)}
@@ -1131,8 +1183,14 @@ function openEntryWizard({cat}){
   const amt=sheet.querySelector('#amtIn'),next=sheet.querySelector('#wzNext'),back=sheet.querySelector('#wzBack');
   let ready=false;
   const m=wireMoney(cur0,()=>{if(ready)paint()});
-  if(!cat)wireSeg('pick','c',v=>{sel=v;setTimeout(()=>go(1),220)});
-  wireMeth(()=>meth,v=>meth=v);
+  showPad(amt,{noDone:true,noScroll:true});
+  /* check azul dentro del monto: pasa directo al siguiente paso */
+  {const ok=document.createElement('button');ok.type='button';ok.className='okk go';ok.innerHTML=checkSvg;ok.setAttribute('aria-label','Listo, siguiente paso');
+   ok.addEventListener('pointerdown',e=>e.preventDefault());ok.onclick=()=>go(1);amt.after(ok);}
+  /* el check de la nota también pasa al siguiente paso */
+  {const nk=sheet.querySelector('.notef .okk');if(nk)nk.onclick=()=>go(1);}
+  if(!cat)wireSeg('pick','c',v=>{sel=v;paint();setTimeout(()=>go(1),220)});
+  wireMeth(()=>'',v=>{meth=v;paint()});
   sheet.querySelector('#methIn').addEventListener('click',e=>{if(e.target.closest('[data-m]')&&meth)setTimeout(()=>go(1),220)});
   const di=sheet.querySelector('#dateIn'),dl=sheet.querySelector('#dateLbl');
   const setDate=v=>{di.value=v;dl.textContent=longDate(v);sheet.querySelectorAll('#dayIn [data-d]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.d===v));summary()};
@@ -1154,13 +1212,17 @@ function openEntryWizard({cat}){
     back.hidden=i===0;
     const last=key==='fecha';
     const noteOk=!!sheet.querySelector('#noteIn').value.trim();
-    next.innerHTML=last?checkSvg+'Guardar gasto':(key==='meth'&&!meth)?'Saltar':'Siguiente';
+    next.innerHTML=last?checkSvg+'Guardar gasto':'Siguiente';
     next.classList.toggle('ghost-ish',!last&&/Saltar/.test(next.textContent));
-    next.disabled=(key==='monto'&&!m.valid())||(key==='nota'&&!noteOk);
+    next.disabled=(key==='monto'&&!m.valid())||(key==='cat'&&!sel)||(key==='meth'&&!meth)||(key==='nota'&&!noteOk);
+    {const g=sheet.querySelector('.okk.go');if(g)g.disabled=!m.valid();}
     if(last)summary();
+    if(key==='monto'&&dir)showPad(amt,{noDone:true,noScroll:true});
   }
   function go(d){
     if(d>0&&steps[i]==='monto'&&!m.valid())return;
+    if(d>0&&steps[i]==='cat'&&!sel){toast('Elige una categoría');return}
+    if(d>0&&steps[i]==='meth'&&!meth){toast('Elige con qué pagaron');return}
     if(d>0&&steps[i]==='nota'&&!sheet.querySelector('#noteIn').value.trim()){sheet.querySelector('#noteIn').focus();return}
     if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
     if(d>0&&i===steps.length-1)return saveIt();
