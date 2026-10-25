@@ -318,6 +318,9 @@ button.bill:hover .ed{background:color-mix(in srgb,var(--accent) 18%,transparent
 .okk{display:none;width:44px;height:44px;padding:0;border-radius:50%;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:16px;flex:none}
 input:focus+.okk{display:grid}
 .okk svg{width:24px;height:24px}
+.notef{position:relative}
+.notef .field{padding-right:58px}
+.notef .okk{position:absolute;right:5px;top:50%;margin-top:-22px}
 /* la hoja no se desliza de lado ni se agranda: todo queda del mismo ancho */
 .sheet{overflow-x:hidden;touch-action:pan-y}
 .sheet *{max-width:100%}
@@ -387,6 +390,55 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 .conv{font-family:var(--display);font-weight:800;font-stretch:85%;font-size:20px;font-variant-numeric:tabular-nums}
 .conv:empty{display:none}
 .usd{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+/* anotar en pasos */
+.wz-bar{display:flex;gap:4px;margin-top:8px;width:min(220px,52vw)}
+.wz-bar i{flex:1;height:5px;border-radius:9px;background:var(--line);transition:background .25s ease}
+.wz-bar i.done{background:var(--accent)}
+.wz-bar i.now{background:linear-gradient(90deg,var(--accent) 50%,var(--line) 50%)}
+.wz{margin-top:14px;min-height:300px}
+.stp-q{font-size:34px;font-stretch:76%;font-weight:900;text-transform:uppercase;line-height:1;margin:2px 0 14px}
+.stp.in-r{animation:inR .28s cubic-bezier(.2,.8,.2,1)}
+.stp.in-l{animation:inL .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes inR{from{opacity:0;transform:translateX(28px)}}
+@keyframes inL{from{opacity:0;transform:translateX(-28px)}}
+.wz-cat{margin:12px 2px 0;font-weight:700;color:var(--muted)}
+.wz-nav{display:grid;grid-template-columns:auto 1fr;gap:10px;margin-top:20px}
+.wz-nav .btn{width:auto}
+.wz-nav #wzBack[hidden]+#wzNext{grid-column:1/-1}
+.btn.primary.ghost-ish{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent)}
+.wz-sum{margin-top:14px;padding:14px 16px;border-radius:18px;background:var(--surface-2);border:1px solid var(--line);display:grid;gap:8px}
+.ws-amt{font-family:var(--display);font-weight:900;font-stretch:76%;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.ws-amt small{display:block;font-size:15px;color:var(--muted);font-weight:700;margin-top:4px;font-family:var(--body)}
+.ws-row{display:flex;align-items:center;gap:10px;font-size:16px}
+.ws-meta{font-size:13.5px;color:var(--muted)}
+/* animación al guardar */
+.saved-fx{position:fixed;inset:0;z-index:80;display:grid;place-content:center;justify-items:center;gap:18px;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:fxIn .2s ease;cursor:pointer}
+.saved-fx.out{opacity:0;transition:opacity .18s ease}
+@keyframes fxIn{from{opacity:0}}
+.rc-stage{position:relative;width:240px;height:260px}
+.rc-slot{position:absolute;left:0;right:0;top:0;height:22px;border-radius:12px;background:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:2}
+.rc-slot::after{content:"";position:absolute;left:16px;right:16px;top:9px;height:4px;border-radius:4px;background:color-mix(in srgb,var(--bg) 30%,transparent)}
+.rc-clip{position:absolute;left:18px;right:18px;top:12px;bottom:0;overflow:hidden}
+.rc-paper{position:relative;background:#FFFFFF;color:#14161B;border-radius:0 0 4px 4px;padding:22px 16px 26px;display:grid;gap:9px;box-shadow:0 10px 24px rgba(0,0,0,.14);
+  animation:print .42s steps(6,end) both}
+@keyframes print{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.rc-top{font-weight:800;font-size:15px;text-align:center;padding-bottom:6px;border-bottom:1.5px dashed #C9CDD4}
+.rc-paper i{display:block;height:7px;border-radius:4px;background:#E6E8EC}
+.rc-paper i.s{width:62%}
+.rc-tot{display:grid;justify-items:center;gap:4px;padding-top:8px;border-top:1.5px dashed #C9CDD4}
+.rc-tot span{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#5E6470}
+.rc-tot b{font-family:var(--display);font-weight:900;font-stretch:76%;font-size:clamp(26px,9vw,34px);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rc-zig{position:absolute;left:0;right:0;bottom:-8px;height:10px;background:linear-gradient(-45deg,transparent 6px,#FFFFFF 0) 0 0/12px 10px,linear-gradient(45deg,transparent 6px,#FFFFFF 0) 0 0/12px 10px}
+.rc-stamp{position:absolute;right:-6px;bottom:22px;display:flex;align-items:center;gap:5px;padding:7px 12px 7px 9px;border-radius:12px;border:3px solid var(--good);color:var(--good);background:color-mix(in srgb,var(--good) 10%,#FFFFFF);
+  font-weight:900;font-size:14px;letter-spacing:.06em;text-transform:uppercase;transform:rotate(-12deg);animation:stamp .22s cubic-bezier(.2,1.5,.4,1) .42s both;z-index:3}
+.rc-stamp svg{width:18px;height:18px}
+@keyframes stamp{from{opacity:0;transform:rotate(-12deg) scale(2.2)}}
+.sv-txt{display:grid;justify-items:center;gap:4px;text-align:center;animation:txt .2s ease .45s both}
+.sv-txt span{font-weight:800;font-size:17px}
+.sv-txt small{font-size:13px;font-weight:700;color:var(--accent)}
+@keyframes txt{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.rc-paper,.rc-stamp,.sv-txt{animation:none}}
+
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:60;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:700;font-size:15px;transition:all .25s ease;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -891,7 +943,7 @@ const sheet=document.getElementById('sheet'),scrim=document.getElementById('scri
 function openSheet(html){
   const was=!sheet.hidden;
   sheet.innerHTML='<div class="grab"></div>'+html;
-  sheet.querySelectorAll('input[inputmode=decimal]').forEach(i=>{const b=document.createElement('button');b.type='button';b.className='okk';b.innerHTML=checkSvg;b.setAttribute('aria-label','Listo, ocultar teclado');b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('mousedown',e=>e.preventDefault());b.onclick=()=>i.blur();i.after(b)});
+  sheet.querySelectorAll('input[inputmode=decimal],#noteIn').forEach(i=>{if(i.id==='noteIn'){const w=document.createElement('div');w.className='notef';i.before(w);w.appendChild(i)}const b=document.createElement('button');b.type='button';b.className='okk';b.innerHTML=checkSvg;b.setAttribute('aria-label','Listo, ocultar teclado');b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('mousedown',e=>e.preventDefault());b.onclick=()=>i.blur();i.after(b)});
   if(was)return;
   sheet.hidden=false;scrim.hidden=false;
   requestAnimationFrame(()=>{sheet.classList.add('on');scrim.classList.add('on')});
@@ -998,7 +1050,7 @@ function wireMoney(cur,onChange){
   return st;
 }
 
-function openEntry({id,cat}){
+function openEntryForm({id,cat}){
   const ex=id?S.entries.find(x=>x.id===id):null;
   let sel=ex?ex.cat:(cat||S.cats[0].id);
   let meth=ex?(ex.method||''):(methOf(lsGet(KEY+'-meth'))?lsGet(KEY+'-meth'):'');
@@ -1016,7 +1068,7 @@ function openEntry({id,cat}){
     <div class="pick" id="pick">${S.cats.map(c=>`<button type="button" data-c="${c.id}" style="--c:${col(c.color)}" aria-pressed="${c.id===sel}"><span class="e">${esc(c.emoji)}</span>${esc(c.name)}</button>`).join('')}</div>
     <span class="lbl">¿Con qué pagaron?</span>
     ${methPicker(meth)}
-    <label class="lbl" for="noteIn">Nota (opcional)</label>
+    <label class="lbl" for="noteIn">Nota</label>
     <input class="field" id="noteIn" placeholder="Ej. Wong, cumple de Sofi" autocomplete="off" value="${ex?esc(ex.note||''):''}">
     <label class="lbl" for="dateIn">Fecha</label>
     <div class="datef"><span class="field" id="dateLbl">${longDate(defDate)}</span><input id="dateIn" type="date" min="${START_DAY}" value="${defDate}" aria-label="Fecha"></div>
@@ -1046,6 +1098,111 @@ function openEntry({id,cat}){
     toast((dk!==k&&!ex?'Cuenta para '+MESES[+dk.slice(5)-1].toLowerCase()+' · ':'')+(ex?'✓ Gasto actualizado':'✓ '+(m.cur==='USD'?'US$ '+fmt(v)+' = '+money(rec.amount):money(v))+' en '+catOf(sel).name));
   };
   sheet.querySelector('[data-close]').onclick=closeSheet;
+}
+
+/* ---------- anotar gasto en pasos: una tarjeta a la vez ---------- */
+function openEntry(o){if(o&&o.id)return openEntryForm(o);return openEntryWizard(o||{})}
+function openEntryWizard({cat}){
+  let sel=cat||S.cats[0].id;
+  let meth=methOf(lsGet(KEY+'-meth'))?lsGet(KEY+'-meth'):'';
+  const cur0=lsGet(KEY+'-cur')==='USD'?'USD':'PEN';
+  const k=mKey();
+  const defDate=k===realKey?todayISO():startOf(k);
+  const steps=['monto',...(cat?[]:['cat']),'meth','nota','fecha'];
+  let i=0;
+  const sec=(key,title,body)=>`<section class="stp" data-s="${key}" hidden><h3 class="stp-q">${title}</h3>${body}</section>`;
+  openSheet(`
+    <div class="sh-head"><div><p class="eyebrow" id="wzEye">Anotar gasto</p><div class="wz-bar" aria-hidden="true">${steps.map(()=>'<i></i>').join('')}</div></div>${closeBtn}</div>
+    <div class="wz" id="wz">
+      ${sec('monto','¿Cuánto fue?',`
+        <div class="money"><span id="curSym">S/</span><input id="amtIn" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" enterkeyhint="done" placeholder="0" autocomplete="off" aria-label="Monto"></div>
+        <div style="margin-top:10px">${curSeg(cur0)}</div>
+        <div id="fxWrap">${fxBoxHtml((fxLast()||{}).rate,fxNoteNew())}</div>
+        ${cat?`<p class="wz-cat">${esc(catOf(cat).emoji)} ${esc(catOf(cat).name)}</p>`:''}`)}
+      ${cat?'':sec('cat','¿En qué fue?',`<div class="pick" id="pick">${S.cats.map(c=>`<button type="button" data-c="${c.id}" style="--c:${col(c.color)}" aria-pressed="${c.id===sel}"><span class="e">${esc(c.emoji)}</span>${esc(c.name)}</button>`).join('')}</div>`)}
+      ${sec('meth','¿Con qué pagaron?',methPicker(meth))}
+      ${sec('nota','¿Qué fue?',`<input class="field" id="noteIn" placeholder="Ej. Wong, cumple de Sofi" autocomplete="off" aria-label="Nota"><p class="sh-note">Escribe una nota corta para reconocer el gasto después.</p>`)}
+      ${sec('fecha','¿Cuándo fue?',`
+        <div class="seg two-o" id="dayIn" role="group" aria-label="Día"><button type="button" data-d="${defDate}" aria-pressed="true">${defDate===todayISO()?'Hoy':dayLbl(defDate)}</button><button type="button" data-d="${isoAdd(defDate,-1)}" aria-pressed="false">${defDate===todayISO()?'Ayer':dayLbl(isoAdd(defDate,-1))}</button></div>
+        <div class="datef" style="margin-top:10px"><span class="field" id="dateLbl">${longDate(defDate)}</span><input id="dateIn" type="date" min="${START_DAY}" value="${defDate}" aria-label="Otra fecha"></div>
+        <div class="wz-sum" id="wzSum"></div>`)}
+    </div>
+    <div class="wz-nav"><button class="btn ghost" type="button" id="wzBack">Atrás</button><button class="btn primary" type="button" id="wzNext">Siguiente</button></div>`);
+  const amt=sheet.querySelector('#amtIn'),next=sheet.querySelector('#wzNext'),back=sheet.querySelector('#wzBack');
+  let ready=false;
+  const m=wireMoney(cur0,()=>{if(ready)paint()});
+  if(!cat)wireSeg('pick','c',v=>{sel=v;setTimeout(()=>go(1),220)});
+  wireMeth(()=>meth,v=>meth=v);
+  sheet.querySelector('#methIn').addEventListener('click',e=>{if(e.target.closest('[data-m]')&&meth)setTimeout(()=>go(1),220)});
+  const di=sheet.querySelector('#dateIn'),dl=sheet.querySelector('#dateLbl');
+  const setDate=v=>{di.value=v;dl.textContent=longDate(v);sheet.querySelectorAll('#dayIn [data-d]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.d===v));summary()};
+  di.addEventListener('change',()=>{if(di.value)setDate(di.value)});
+  sheet.querySelector('#dayIn').onclick=e=>{const b=e.target.closest('[data-d]');if(b)setDate(b.dataset.d)};
+  sheet.querySelector('#noteIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();go(1)}});
+  function summary(){
+    const v=m.amount(),usd=m.cur==='USD',c=catOf(sel);
+    sheet.querySelector('#wzSum').innerHTML=`
+      <div class="ws-amt">${usd?'US$ '+fmt(v):money(v)}${usd&&m.rate()?`<small>= ${money(Math.round(v*m.rate()*100)/100)}</small>`:''}</div>
+      <div class="ws-row"><span class="coin sm" style="--c:${col(c.color)}">${esc(c.emoji)}</span><b>${esc(c.name)}</b></div>
+      <div class="ws-meta">${meth&&methOf(meth)?esc(methLbl(meth)):'Sin método de pago'}${sheet.querySelector('#noteIn').value.trim()?' · '+esc(sheet.querySelector('#noteIn').value.trim()):''}</div>`;
+  }
+  function paint(dir){
+    const key=steps[i];
+    sheet.querySelectorAll('.stp').forEach(s=>{const on=s.dataset.s===key;s.hidden=!on;if(on&&dir){s.classList.remove('in-l','in-r');void s.offsetWidth;s.classList.add(dir>0?'in-r':'in-l')}});
+    sheet.querySelectorAll('.wz-bar i').forEach((b,j)=>b.className=j<i?'done':j===i?'now':'');
+    sheet.querySelector('#wzEye').textContent='Anotar gasto · Paso '+(i+1)+' de '+steps.length;
+    back.hidden=i===0;
+    const last=key==='fecha';
+    const noteOk=!!sheet.querySelector('#noteIn').value.trim();
+    next.innerHTML=last?checkSvg+'Guardar gasto':(key==='meth'&&!meth)?'Saltar':'Siguiente';
+    next.classList.toggle('ghost-ish',!last&&/Saltar/.test(next.textContent));
+    next.disabled=(key==='monto'&&!m.valid())||(key==='nota'&&!noteOk);
+    if(last)summary();
+  }
+  function go(d){
+    if(d>0&&steps[i]==='monto'&&!m.valid())return;
+    if(d>0&&steps[i]==='nota'&&!sheet.querySelector('#noteIn').value.trim()){sheet.querySelector('#noteIn').focus();return}
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    if(d>0&&i===steps.length-1)return saveIt();
+    i=Math.max(0,Math.min(steps.length-1,i+d));paint(d);
+  }
+  sheet.querySelector('#noteIn').addEventListener('input',()=>paint());
+  next.onclick=()=>go(1);back.onclick=()=>go(-1);
+  sheet.querySelector('[data-close]').onclick=closeSheet;
+  function saveIt(){
+    if(!m.valid())return;
+    const v=Math.round(m.amount()*100)/100;
+    const d=di.value||defDate;
+    if(d<START_DAY){toast('La app empieza el '+dayLbl(START_DAY)+' (ciclo de noviembre)');return}
+    const rec={id:Date.now().toString(36),cat:sel,note:sheet.querySelector('#noteIn').value.trim(),date:d,method:meth||undefined};
+    if(m.cur==='USD'){const r=m.rate();Object.assign(rec,{amount:Math.round(v*r*100)/100,cur:'USD',orig:v,rate:r,rateDate:todayISO()});rememberRate(r)}
+    else Object.assign(rec,{amount:v,cur:'PEN'});
+    lsSet(KEY+'-cur',m.cur);if(meth)lsSet(KEY+'-meth',meth);
+    S.entries.push(rec);save();
+    const dk=cycleOf(d);if(dk!==mKey()){viewY=+dk.slice(0,4);viewM=+dk.slice(5)-1}
+    closeSheet();render();paintFx();
+    celebrate(m.cur==='USD'?'US$ '+fmt(v):money(v),catOf(sel),dk!==k?'Cuenta para '+MESES[+dk.slice(5)-1].toLowerCase():'');
+  }
+  ready=true;paint();
+}
+
+/* animación al guardar: sale una boleta con el gasto y se sella */
+function celebrate(amount,c,extra){
+  const el=document.createElement('div');el.className='saved-fx';el.setAttribute('role','status');
+  el.innerHTML=`<div class="rc-stage" aria-hidden="true">
+      <div class="rc-slot"></div>
+      <div class="rc-clip"><div class="rc-paper">
+        <div class="rc-top">${esc(c.emoji)} ${esc(c.name)}</div>
+        <i></i><i class="s"></i><i></i>
+        <div class="rc-tot"><span>Total</span><b>${esc(amount)}</b></div>
+        <div class="rc-zig"></div>
+      </div></div>
+      <div class="rc-stamp">${checkSvg}<span>Anotado</span></div>
+    </div>
+    <div class="sv-txt"><span>Gasto anotado</span>${extra?`<small>${esc(extra)}</small>`:''}</div>`;
+  document.body.appendChild(el);
+  const end=()=>{el.classList.add('out');setTimeout(()=>el.remove(),180)};
+  el.onclick=end;setTimeout(end,matchMedia('(prefers-reduced-motion: reduce)').matches?800:1150);
 }
 
 function openPay(f,pd){
