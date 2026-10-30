@@ -462,10 +462,30 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 .fl-cats button[aria-pressed="true"]{border-color:var(--c);box-shadow:0 0 0 1px var(--c);background:color-mix(in srgb,var(--c) 12%,var(--surface))}
 .fl-cats button[data-fcat="todas"][aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg);box-shadow:none}
 .fl-cats button[data-fcat="todas"][aria-pressed="true"] small{color:inherit;opacity:.7}
-.fl-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fl-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.fl-pick{--c:var(--ink);flex:1 1 180px;min-width:0;display:flex;align-items:center;gap:9px;height:46px;padding:0 12px 0 7px;border-radius:15px;border:1.5px solid color-mix(in srgb,var(--c) 55%,var(--line));background:var(--surface);text-align:left}
+.fl-pick svg{width:18px;height:18px;flex:none;color:var(--muted);margin-left:auto}
+.fl-pick .coin.sm{width:32px;height:32px;font-size:16px}
+.fl-pn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;font-size:15px}
+.fl-pc{flex:none;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:800;color:var(--muted);display:grid;place-items:center}
+.fl-all{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-weight:900;font-size:17px}
+.fl-all.big{width:38px;height:38px}
+.fp{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.fp button{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto 26px;gap:12px;align-items:center;padding:10px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface);text-align:left}
+.fp-t{display:grid;min-width:0}
+.fp-t b{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fp-t small{font-size:12.5px;color:var(--muted)}
+.fp-v{font-family:var(--display);font-weight:800;font-stretch:82%;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fp-ck{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);color:transparent}
+.fp-ck svg{width:15px;height:15px}
+.fp button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.fp button[aria-pressed="true"] .fp-ck{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.fl-sel select{width:100%;height:42px;padding:0 36px 0 13px;border-radius:13px;border:1.5px solid var(--c,var(--line));background:var(--surface);color:var(--ink);font:inherit;font-size:15px;font-weight:700;-webkit-appearance:none;appearance:none;text-overflow:ellipsis;cursor:pointer}
+.fl-sel svg{position:absolute;right:11px;top:50%;width:18px;height:18px;margin-top:-9px;pointer-events:none;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .fl-tot{font-size:14px;color:var(--muted);font-weight:600}
 .fl-tot b{color:var(--ink);font-family:var(--display);font-stretch:82%;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
-.fl-sort{display:flex;padding:3px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.fl-sort{flex:none;display:flex;padding:3px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
 .fl-sort button{height:32px;padding:0 11px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted)}
 .fl-sort button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .fab{position:fixed;z-index:25;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);
@@ -821,6 +841,17 @@ function renderFijos(){
 let confirmDel=null;
 const catOf=id=>S.cats.find(c=>c.id===id)||{name:'Otro',emoji:'•',color:'blue'};
 let fCat='todas',fSort='fecha';
+/* selector de categoría con la línea gráfica de la app (hoja inferior) */
+function openCatFilter(){
+  const k=mKey(),all=entriesOf(k),used=S.cats.filter(c=>all.some(e=>e.cat===c.id));
+  const tot=id=>all.filter(e=>id==='todas'||e.cat===id).reduce((x,e)=>x+Number(e.amount),0);
+  const row=(id,icon,name,n)=>`<li><button type="button" data-fpick="${id}" aria-pressed="${fCat===id}">${icon}<span class="fp-t"><b>${name}</b><small>${n} ${n===1?'gasto':'gastos'}</small></span><span class="fp-v">${money(tot(id))}</span><span class="fp-ck" aria-hidden="true">${checkSvg}</span></button></li>`;
+  openSheet(`
+    <div class="sh-head"><div><p class="eyebrow">Filtrar gastos</p><h2 id="shTitle">Categoría</h2></div>${closeBtn}</div>
+    <ul class="fp">${row('todas','<span class="fl-all big" aria-hidden="true">≡</span>','Todas las categorías',all.length)}${used.map(c=>row(c.id,`<span class="coin sm" style="--c:${col(c.color)}" aria-hidden="true">${esc(c.emoji)}</span>`,esc(c.name),all.filter(e=>e.cat===c.id).length)).join('')}</ul>`);
+  sheet.querySelector('[data-close]').onclick=closeSheet;
+  sheet.querySelector('.fp').onclick=e=>{const b=e.target.closest('[data-fpick]');if(!b)return;fCat=b.dataset.fpick;confirmDel=null;closeSheet();render()};
+}
 function renderDia(){
   const k=mKey();
   const all=entriesOf(k);
@@ -837,17 +868,19 @@ function renderDia(){
   <button class="btn primary" type="button" id="addEntry">${plusSvg}Anotar un gasto</button>
   ${all.length?`
   <div class="fl">
-    <div class="fl-cats" role="group" aria-label="Filtrar por categoría">
-      <button type="button" data-fcat="todas" aria-pressed="${fCat==='todas'}">Todas <small>${all.length}</small></button>
-      ${used.map(c=>`<button type="button" data-fcat="${c.id}" style="--c:${col(c.color)}" aria-pressed="${fCat===c.id}">${esc(c.emoji)} ${esc(c.name)} <small>${all.filter(e=>e.cat===c.id).length}</small></button>`).join('')}
-    </div>
     <div class="fl-bar">
-      <span class="fl-tot">${fCat==='todas'?'Total':esc(catOf(fCat).name)}: <b>${money(tot)}</b></span>
+      <button type="button" class="fl-pick" id="fCatBtn" style="--c:${fCat==='todas'?'var(--ink)':col(catOf(fCat).color)}" aria-haspopup="dialog">
+        ${fCat==='todas'?'<span class="fl-all" aria-hidden="true">≡</span>':`<span class="coin sm" style="--c:${col(catOf(fCat).color)}" aria-hidden="true">${esc(catOf(fCat).emoji)}</span>`}
+        <span class="fl-pn">${fCat==='todas'?'Todas las categorías':esc(catOf(fCat).name)}</span>
+        <span class="fl-pc">${fCat==='todas'?all.length:all.filter(e=>e.cat===fCat).length}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
       <div class="fl-sort" role="group" aria-label="Ordenar">
         <button type="button" data-fsort="fecha" aria-pressed="${fSort==='fecha'}">Recientes</button>
         <button type="button" data-fsort="monto" aria-pressed="${fSort==='monto'}">Mayor monto</button>
       </div>
     </div>
+    <span class="fl-tot">${fCat==='todas'?'Total del mes':esc(catOf(fCat).emoji+' '+catOf(fCat).name)}: <b>${money(tot)}</b></span>
   </div>
   <ul class="moves">${ents.map(e=>{const c=catOf(e.cat);return `
     <li>
@@ -982,6 +1015,7 @@ document.getElementById('view').addEventListener('click',e=>{
   if(d.cat){openEntry({cat:d.cat});return}
   if(d.ed){openEntry({id:d.ed});return}
   if(d.fcat){fCat=d.fcat;confirmDel=null;render();return}
+  if(b.id==='fCatBtn'){openCatFilter();return}
   if(d.fsort){fSort=d.fsort;confirmDel=null;render();return}
   if(d.del){confirmDel=d.del;render();return}
   if('delno' in d){confirmDel=null;render();return}
