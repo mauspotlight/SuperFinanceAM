@@ -1063,6 +1063,8 @@ async function pinHash(p){
 }
 /* ---- Face ID / Touch ID (llave de acceso del celular). Cada celular registra la suya ---- */
 const BIO_KEY=KEY+'-bio';
+/* nombre según el equipo: en la Mac es Touch ID; en iPhone/iPad, Face ID o Touch ID */
+const BIO_NAME=/Macintosh/.test(navigator.userAgent)&&!(navigator.maxTouchPoints>1)?'Touch ID':/iPhone|iPad|Macintosh/.test(navigator.userAgent)?'Face ID / Touch ID':'huella o rostro';
 let bioOK=false;
 (async()=>{try{bioOK=!!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch(e){bioOK=false}if(tab==='ahorros')render()})();
 const b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -1073,7 +1075,7 @@ async function bioRegister(){
   try{
     const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'SuperFinance'},user:{id:rnd(16),name:'casita',displayName:'SuperFinance casita'},
       pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});
-    if(!c)throw 0;lsSet(BIO_KEY,b64(c.rawId));render();toast('✓ Face ID / Touch ID activado en este celular');
+    if(!c)throw 0;lsSet(BIO_KEY,b64(c.rawId));render();toast('✓ '+BIO_NAME+' activado en este equipo');
   }catch(e){toast(e&&e.name==='NotAllowedError'?'Cancelado':'No se pudo activar aquí')}
 }
 async function bioUnlock(){
@@ -1081,9 +1083,9 @@ async function bioUnlock(){
   try{
     const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:'public-key',id:unb64(id),transports:['internal']}],userVerification:'required',timeout:60000}});
     if(a){savPin='';savStep='enter';savOpen=true;render()}
-  }catch(e){if(e&&e.name!=='NotAllowedError')toast('No se pudo usar Face ID. Usa la clave.')}
+  }catch(e){if(e&&e.name!=='NotAllowedError')toast('No se pudo usar '+BIO_NAME+'. Usa la clave.')}
 }
-function bioOff(){try{localStorage.removeItem(BIO_KEY)}catch(e){}render();toast('Face ID / Touch ID quitado de este celular')}
+function bioOff(){try{localStorage.removeItem(BIO_KEY)}catch(e){}render();toast(BIO_NAME+' quitado de este equipo')}
 function savTouch(){clearTimeout(savIdle);savIdle=setTimeout(()=>{savOpen=false;if(tab==='ahorros')render()},120000)}
 function savLock(){savOpen=false;savPin='';clearTimeout(savIdle);render()}
 const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -1108,7 +1110,7 @@ function renderAhorros(){
     return `<div class="lock">
       <span class="lock-ic">${LOCK_SVG}</span>
       <h2>${title}</h2><p>${sub}</p>
-      ${S.savPin&&!savChanging&&savStep!=='new'&&savStep!=='confirm'&&bioOK&&bioId()?`<button type="button" class="btn ghost bio-btn" id="bioGo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 15.5a3.5 3.5 0 0 0 5 0"/></svg>Usar Face ID / Touch ID</button>`:''}
+      ${S.savPin&&!savChanging&&savStep!=='new'&&savStep!=='confirm'&&bioOK&&bioId()?`<button type="button" class="btn ghost bio-btn" id="bioGo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 15.5a3.5 3.5 0 0 0 5 0"/></svg>Usar ${BIO_NAME}</button>`:''}
       <div class="pin-dots${savStep==='bad'||savStep==='badold'?' bad':''}" aria-label="${savPin.length} de 4 dígitos">${[0,1,2,3].map(i=>`<i class="${i<savPin.length?'on':''}"></i>`).join('')}</div>
       <div class="kpad pinpad">${['1','2','3','4','5','6','7','8','9','','0','del'].map(x=>x?`<button type="button" data-pin="${x}" ${x==='del'?'aria-label="Borrar"':''}>${x==='del'?DEL_SVG:x}</button>`:'<span></span>').join('')}</div>
       ${savChanging?'<button type="button" class="lock-cancel" id="savCancelChange">Cancelar cambio de clave</button>':''}
@@ -1144,7 +1146,7 @@ function renderAhorros(){
   :`<div class="empty" style="margin-top:10px"><span class="big">🐷</span><b>Todavía no hay movimientos</b><span>Toca “Meter plata” para anotar lo primero que guardaron.</span></div>`}
   <div class="sv-sec">
     <span class="sv-sec-t">Seguridad</span>
-    ${bioOK?(bioId()?`<button type="button" id="bioOff">${FACE_SVG}Quitar Face ID / Touch ID</button>`:`<button type="button" id="bioOn">${FACE_SVG}Activar Face ID / Touch ID</button>`):''}
+    ${bioOK?(bioId()?`<button type="button" id="bioOff">${FACE_SVG}Quitar ${BIO_NAME}</button>`:`<button type="button" id="bioOn">${FACE_SVG}Activar ${BIO_NAME}</button>`):''}
     <button type="button" id="savChange">${KEY_SVG}Cambiar clave</button>
   </div>`;
 }
