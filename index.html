@@ -301,7 +301,7 @@ button.bill:active .ed{opacity:.6}
 
 /* pestañas */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
-.tabbar-in{max-width:440px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:5px}
+.tabbar-in{max-width:440px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:5px}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:52px;border-radius:13px;font-weight:700;font-size:13px;color:var(--muted)}
 .tab svg{width:21px;height:21px}
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
@@ -505,6 +505,44 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 .fab:active{transform:scale(.92)}
 .fab:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .fab.hide{opacity:0;pointer-events:none;transform:scale(.8)}
+.fab.off{display:none}
+.tab{font-size:12.5px}
+.lock{display:grid;justify-items:center;text-align:center;gap:6px;margin-top:22px;padding:24px 18px 18px;border-radius:24px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.lock-ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.lock-ic svg{width:26px;height:26px}
+.lock h2{font-size:30px;font-stretch:78%;font-weight:900;text-transform:uppercase;margin-top:6px}
+.lock p{margin:0;color:var(--muted);font-size:14.5px;max-width:30ch}
+.pin-dots{display:flex;gap:16px;margin:14px 0 6px}
+.pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);transition:all .12s ease}
+.pin-dots i.on{background:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.pin-dots.bad{animation:shake .35s ease}
+.pin-dots.bad i{border-color:var(--bad)}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pinpad{width:100%;max-width:300px}
+.pinpad span{display:block}
+.lock-note{font-size:12.5px!important;margin-top:8px!important}
+.bio-btn{margin-top:10px;max-width:300px;height:50px;font-size:15.5px}
+.bio-btn svg{width:22px;height:22px}
+.lock-cancel{margin-top:8px;font-size:13.5px;font-weight:700;color:var(--accent);padding:6px 10px}
+.sv-sec{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.sv-sec button{height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:700;color:var(--muted)}
+.sv-sec button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.sv-tot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.sv-card{display:grid;gap:6px;padding:16px 14px;border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);min-width:0}
+.sv-card.sol{border-top:4px solid var(--good)}
+.sv-card.dol{border-top:4px solid var(--accent)}
+.sv-card b{font-family:var(--display);font-weight:900;font-stretch:74%;font-size:clamp(28px,9vw,40px);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-card b small{font-size:15px;color:var(--muted);font-weight:700;margin-right:3px}
+.sv-by{display:grid;gap:3px;font-size:12px;color:var(--muted);font-weight:600}
+.sv-by span{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-act{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sv-act .btn{height:52px;font-size:16px}
+.sv-who{width:fit-content}
+.sv-ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px}
+.sv-ic.in{background:var(--good-soft);color:var(--good)}
+.sv-ic.out{background:var(--bad-soft);color:var(--bad)}
+.moves .r b.pos{color:var(--good)}
+.moves .r b.neg{color:var(--bad)}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:60;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-weight:700;font-size:15px;transition:all .25s ease;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -538,6 +576,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
     <button class="tab" role="tab" type="button" data-tab="dia" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h2l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.2"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>Día a día</button>
     <button class="tab" role="tab" type="button" data-tab="fijos" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>Fijos</button>
     <button class="tab" role="tab" type="button" data-tab="stats" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Estadísticas</button>
+    <button class="tab" role="tab" type="button" data-tab="ahorros" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Ahorros</button>
   </div>
 </nav>
 
@@ -993,9 +1032,148 @@ function renderStats(){
 }
 
 /* ---------- render ---------- */
+/* ---------- ahorros (protegido con clave) ---------- */
+let savOpen=false,savIdle=null,savPin='',savStep='enter',savFirst='',savWho='todos',savChanging=false;
+const LOCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>';
+async function pinHash(p){
+  try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sf-casita:'+p));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  catch(e){let h=0;for(const c of 'sf-casita:'+p)h=(h*31+c.charCodeAt(0))|0;return 'x'+h}
+}
+/* ---- Face ID / Touch ID (llave de acceso del celular). Cada celular registra la suya ---- */
+const BIO_KEY=KEY+'-bio';
+let bioOK=false;
+(async()=>{try{bioOK=!!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch(e){bioOK=false}if(tab==='ahorros')render()})();
+const b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+const bioId=()=>lsGet(BIO_KEY);
+async function bioRegister(){
+  try{
+    const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'SuperFinance'},user:{id:rnd(16),name:'casita',displayName:'SuperFinance casita'},
+      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});
+    if(!c)throw 0;lsSet(BIO_KEY,b64(c.rawId));render();toast('✓ Face ID / Touch ID activado en este celular');
+  }catch(e){toast(e&&e.name==='NotAllowedError'?'Cancelado':'No se pudo activar aquí')}
+}
+async function bioUnlock(){
+  const id=bioId();if(!id)return;
+  try{
+    const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:'public-key',id:unb64(id),transports:['internal']}],userVerification:'required',timeout:60000}});
+    if(a){savPin='';savStep='enter';savOpen=true;render()}
+  }catch(e){if(e&&e.name!=='NotAllowedError')toast('No se pudo usar Face ID. Usa la clave.')}
+}
+function bioOff(){try{localStorage.removeItem(BIO_KEY)}catch(e){}render();toast('Face ID / Touch ID quitado de este celular')}
+function savTouch(){clearTimeout(savIdle);savIdle=setTimeout(()=>{savOpen=false;if(tab==='ahorros')render()},120000)}
+function savLock(){savOpen=false;savPin='';clearTimeout(savIdle);render()}
+const savs=()=>{if(!S.sav)S.sav=[];
+  /* saldos de partida de las cuentas (una sola vez) */
+  if(!S.savInit){S.savInit=1;
+    if(!S.sav.some(m=>m.id==='sav-init-usd'))S.sav.push({id:'sav-init-usd',type:'in',cur:'USD',who:'',amount:20047.84,note:'Saldo inicial',date:'2026-11-04',init:true});
+    if(!S.sav.some(m=>m.id==='sav-init-pen'))S.sav.push({id:'sav-init-pen',type:'in',cur:'PEN',who:'',amount:940.04,note:'Saldo inicial',date:'2026-11-04',init:true});
+    save()}
+  return S.sav};
+const savTotal=cur=>savs().filter(m=>m.cur===cur).reduce((a,m)=>a+(m.type==='in'?1:-1)*Number(m.amount),0);
+function renderAhorros(){
+  if(!savOpen){
+    if(!S.savPin&&savStep==='enter')savStep='new';
+    const title=savStep==='new'?(savChanging?'Nueva clave':'Crea una clave'):savStep==='confirm'?'Repite la clave':'Ingresa tu clave';
+    const sub=savStep==='new'?'4 dígitos para proteger los ahorros. La usarán Are y tú.':savStep==='confirm'?'Para confirmar que la escribiste bien.':'Los ahorros están protegidos.';
+    return `<div class="lock">
+      <span class="lock-ic">${LOCK_SVG}</span>
+      <h2>${title}</h2><p>${sub}</p>
+      ${S.savPin&&savStep!=='new'&&savStep!=='confirm'&&bioOK&&bioId()?`<button type="button" class="btn ghost bio-btn" id="bioGo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 15.5a3.5 3.5 0 0 0 5 0"/></svg>Usar Face ID / Touch ID</button>`:''}
+      <div class="pin-dots${savStep==='bad'?' bad':''}" aria-label="${savPin.length} de 4 dígitos">${[0,1,2,3].map(i=>`<i class="${i<savPin.length?'on':''}"></i>`).join('')}</div>
+      <div class="kpad pinpad">${['1','2','3','4','5','6','7','8','9','','0','del'].map(x=>x?`<button type="button" data-pin="${x}" ${x==='del'?'aria-label="Borrar"':''}>${x==='del'?DEL_SVG:x}</button>`:'<span></span>').join('')}</div>
+      ${savChanging?'<button type="button" class="lock-cancel" id="savCancelChange">Cancelar cambio de clave</button>':''}
+    </div>`;
+  }
+  savTouch();
+  const pen=savTotal('PEN'),usd=savTotal('USD');
+  const list=savs().filter(m=>savWho==='todos'||m.who===savWho).sort((a,b)=>(a.init?1:0)-(b.init?1:0)||b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  const who=id=>OWNERS.find(o=>o.id===id)||{name:'',color:'blue'};
+  const by=(o,cur)=>savs().filter(m=>m.who===o&&m.cur===cur).reduce((a,m)=>a+(m.type==='in'?1:-1)*Number(m.amount),0);
+  return `
+  <div class="sec-h"><h2>Ahorros</h2><button type="button" class="icon-btn" id="savLock" aria-label="Bloquear ahorros">${LOCK_SVG}</button></div>
+  <p class="hint">Lo que tienen guardado. Anoten cada vez que meten o sacan plata.</p>
+  <div class="sv-tot">
+    <div class="sv-card sol"><span class="eyebrow">Cuenta en soles</span><b><small>S/</small>${fmt(pen)}</b>
+      <span class="sv-by">${OWNERS.map(o=>`<span><i class="plate xs" style="--c:${col(o.color)}"></i>${o.name} ${by(o.id,'PEN')<0?'−':''}${money(Math.abs(by(o.id,'PEN')))}</span>`).join('')}</span></div>
+    <div class="sv-card dol"><span class="eyebrow">Cuenta en dólares</span><b><small>US$</small>${fmt(usd)}</b>
+      <span class="sv-by">${OWNERS.map(o=>`<span><i class="plate xs" style="--c:${col(o.color)}"></i>${o.name} ${by(o.id,'USD')<0?'−':''}US$ ${fmt(Math.abs(by(o.id,'USD')))}</span>`).join('')}</span></div>
+  </div>
+  <div class="sv-act">
+    <button type="button" class="btn primary" data-savadd="in">${plusSvg}Meter plata</button>
+    <button type="button" class="btn ghost" data-savadd="out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>Sacar plata</button>
+  </div>
+  <div class="sv-sec">
+    ${bioOK?(bioId()?`<button type="button" id="bioOff">Quitar Face ID / Touch ID</button>`:`<button type="button" id="bioOn" class="on">Activar Face ID / Touch ID</button>`):''}
+    <button type="button" id="savChange">Cambiar clave</button>
+  </div>
+  <div class="sec-h" style="margin-top:24px"><h2 style="font-size:25px">Movimientos</h2></div>
+  <div class="fl-sort sv-who" role="group" aria-label="Filtrar por persona">${[{id:'todos',name:'Todos'},...OWNERS].map(o=>`<button type="button" data-savwho="${o.id}" aria-pressed="${savWho===o.id}">${o.name}</button>`).join('')}</div>
+  ${list.length?`<ul class="moves" style="margin-top:10px">${list.map(m=>{const w=who(m.who),inn=m.type==='in';return `
+    <li>
+      <span class="sv-ic ${inn?'in':'out'}" aria-hidden="true">${inn?'↓':'↑'}</span>
+      <div style="min-width:0"><div class="nm">${m.init?'Saldo inicial':(inn?'Metió':'Sacó')+' '+esc(w.name)+(m.note?' · '+esc(m.note):'')}</div><div class="d">${dayLbl(m.date)} · ${m.cur==='USD'?'Cuenta en dólares':'Cuenta en soles'}</div></div>
+      <div class="r"><b class="${inn?'pos':'neg'}">${inn?'+':'−'}${m.cur==='USD'?'US$ '+fmt(m.amount):money(m.amount)}</b><button class="mini-btn" type="button" data-savdel="${m.id}" aria-label="Borrar movimiento">${trashSvg}</button></div>
+      ${confirmDel==='sav-'+m.id?`<div class="confirm"><span>¿Borrar este movimiento?</span><button class="btn sm danger" type="button" data-savdelyes="${m.id}">Sí, borrar</button><button class="btn sm ghost" type="button" data-delno>No</button></div>`:''}
+    </li>`}).join('')}</ul>`
+  :`<div class="empty" style="margin-top:10px"><span class="big">🐷</span><b>Todavía no hay movimientos</b><span>Toca “Meter plata” para anotar lo primero que guardaron.</span></div>`}`;
+}
+async function pinPress(k){
+  if(k==='del'){savPin=savPin.slice(0,-1);if(savStep==='bad')savStep='enter';render();return}
+  if(savPin.length>=4)return;
+  savPin+=k;if(savStep==='bad')savStep='enter';render();
+  if(savPin.length<4)return;
+  const p=savPin;
+  setTimeout(async()=>{
+    if(savStep==='new'){savFirst=p;savPin='';savStep='confirm';render();return}
+    if(savStep==='confirm'){
+      if(p!==savFirst){savPin='';savStep='new';savFirst='';render();toast('No coinciden, crea la clave otra vez');return}
+      const wasChange=savChanging;S.savPin=await pinHash(p);savChanging=false;save();savPin='';savStep='enter';savOpen=true;render();toast(wasChange?'✓ Clave cambiada':'✓ Clave creada');return}
+    if(await pinHash(p)===S.savPin){savPin='';savOpen=true;render()}
+    else{savStep='bad';savPin='';render();if(navigator.vibrate)try{navigator.vibrate([60,40,60])}catch(e){}}
+  },140);
+}
+function openSav(type){
+  let cur=lsGet(KEY+'-savcur')==='USD'?'USD':'PEN',who='',t=type;
+  const k=mKey(),defDate=todayISO();
+  const seg=(id,opts,sel)=>`<div class="seg two-o" id="${id}" role="group">${opts.map(o=>`<button type="button" data-v="${o[0]}" style="--c:${o[2]||'var(--p-blue)'}" aria-pressed="${o[0]===sel}">${o[1]}</button>`).join('')}</div>`;
+  openSheet(`
+    <div class="sh-head"><div><p class="eyebrow">Ahorros</p><h2 id="shTitle">${t==='in'?'Meter plata':'Sacar plata'}</h2></div>${closeBtn}</div>
+    ${seg('svType',[['in','↓ Meter','var(--good)'],['out','↑ Sacar','var(--bad)']],t)}
+    <span class="lbl">¿En qué cuenta?</span>
+    ${seg('svCur',[['PEN','S/ Soles'],['USD','US$ Dólares']],cur)}
+    <label class="lbl" for="amtIn">¿Cuánto?</label>
+    <div class="money"><span id="svSym">${cur==='USD'?'US$':'S/'}</span><input id="amtIn" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <span class="lbl">¿Quién?</span>
+    <div class="seg two-o" id="svWho" role="group">${OWNERS.map(o=>`<button type="button" data-v="${o.id}" style="--c:${col(o.color)}" aria-pressed="false"><span class="plate xs" style="--c:${col(o.color)}"></span>${o.name}</button>`).join('')}</div>
+    <label class="lbl" for="noteIn">Nota (opcional)</label>
+    <input class="field" id="noteIn" placeholder="Ej. sueldo, viaje, emergencia" autocomplete="off">
+    <div class="sh-actions"><button class="btn primary" type="button" id="svSave" disabled>${checkSvg}Guardar</button></div>`);
+  const amt=sheet.querySelector('#amtIn'),saveB=sheet.querySelector('#svSave');
+  const check=()=>{saveB.disabled=!(parseAmt(amt.value)>0&&who)};
+  amt.addEventListener('input',check);
+  const wire=(id,fn)=>{const el=sheet.querySelector('#'+id);el.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;el.querySelectorAll('[data-v]').forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v);check()}};
+  wire('svType',v=>{t=v;sheet.querySelector('#shTitle').textContent=v==='in'?'Meter plata':'Sacar plata'});
+  wire('svCur',v=>{cur=v;sheet.querySelector('#svSym').textContent=v==='USD'?'US$':'S/'});
+  wire('svWho',v=>who=v);
+  sheet.querySelector('[data-close]').onclick=closeSheet;
+  saveB.onclick=()=>{
+    const v=Math.round(parseAmt(amt.value)*100)/100;if(!(v>0)||!who)return;
+    if(t==='out'&&v>savTotal(cur)+0.001){toast('No alcanza: en esa cuenta hay '+(cur==='USD'?'US$ '+fmt(savTotal(cur)):money(savTotal(cur))));return}
+    savs().push({id:'s'+Date.now().toString(36),type:t,cur,who,amount:v,note:sheet.querySelector('#noteIn').value.trim(),date:defDate});
+    lsSet(KEY+'-savcur',cur);save();closeSheet();render();
+    toast('✓ '+(t==='in'?'Guardado':'Retiro anotado')+': '+(cur==='USD'?'US$ '+fmt(v):money(v)));
+  };
+}
+
 function render(){
   renderTop();paintFx();
-  document.getElementById('view').innerHTML=tab==='fijos'?renderFijos():tab==='dia'?renderDia():renderStats();
+  const sv=tab==='ahorros';
+  document.getElementById('hero').hidden=sv;document.querySelector('.month').hidden=sv;document.getElementById('billLbl').hidden=sv;
+  document.getElementById('fab').classList.toggle('off',sv);
+  if(!sv&&savOpen){savOpen=false;clearTimeout(savIdle)}
+  document.getElementById('view').innerHTML=tab==='fijos'?renderFijos():tab==='dia'?renderDia():tab==='ahorros'?renderAhorros():renderStats();
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===tab?'true':'false'));
 }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;confirmDel=null;render();const h=document.getElementById('hero');window.scrollTo({top:h.offsetTop+h.offsetHeight-60,behavior:'smooth'})});
@@ -1034,6 +1212,17 @@ document.getElementById('view').addEventListener('click',e=>{
   if(d.ed){openEntry({id:d.ed});return}
   if(d.fcat){fCat=d.fcat;confirmDel=null;render();return}
   if(b.id==='fCatBtn'){openCatFilter();return}
+  if(d.pin!==undefined&&d.pin!==''){pinPress(d.pin);return}
+  if(b.id==='savLock'){savLock();return}
+  if(b.id==='bioGo'){bioUnlock();return}
+  if(b.id==='bioOn'){bioRegister();return}
+  if(b.id==='bioOff'){bioOff();return}
+  if(b.id==='savChange'){savChanging=true;savOpen=false;savPin='';savStep='new';render();return}
+  if(b.id==='savCancelChange'){savChanging=false;savPin='';savStep='enter';savOpen=true;render();return}
+  if(d.savadd){openSav(d.savadd);return}
+  if(d.savwho){savWho=d.savwho;render();return}
+  if(d.savdel){confirmDel='sav-'+d.savdel;render();return}
+  if(d.savdelyes){S.sav=savs().filter(m=>m.id!==d.savdelyes);confirmDel=null;save();render();toast('Movimiento borrado');return}
   if(d.fsort){fSort=d.fsort;confirmDel=null;render();return}
   if(d.del){confirmDel=d.del;render();return}
   if('delno' in d){confirmDel=null;render();return}
@@ -1506,7 +1695,7 @@ function setSync(cls,txt){
   syncEl.innerHTML=cls==='err'||/Sin conexión/.test(txt)?DISK_OFF:DISK;
   syncEl.title=txt;syncEl.setAttribute('aria-label',txt);
 }
-const CFG_FIELDS=['v','mv','fixed','cats','methods','fx','bill'];
+const CFG_FIELDS=['v','mv','fixed','cats','methods','fx','bill','sav','savPin','savInit'];
 const clean=o=>JSON.parse(JSON.stringify(o===undefined?null:o));
 let fdb=null,root=null,gastosCol=null,cloudReady=false,remoteCfg=null,remoteEnts=null,base=null,seeding=false;
 /* "base" = lo que la nube ya tiene; solo se sube lo que cambió respecto a eso */
