@@ -131,11 +131,20 @@ h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
 .bill{font-size:13px;line-height:1.35;color:var(--muted)}
 .bill b{font-family:var(--body);font-size:13px;font-stretch:100%;text-transform:none;font-weight:700;color:var(--ink)}
 .bill.none{font-style:italic}
+.hello-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hello-row h1{min-width:0;white-space:nowrap;font-size:clamp(24px,7.9vw,56px)!important;padding-right:4px}
+.cdr{position:relative;flex:none;display:grid;place-items:center;width:58px;height:58px;color:var(--accent)}
+.cdr svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.cdr .t{fill:none;stroke:var(--line);stroke-width:3}
+.cdr .p{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round}
+.cdr b{position:relative;display:grid;justify-items:center;font-family:var(--display);font-stretch:80%;font-size:20px;font-weight:900;line-height:.9;color:var(--ink);font-variant-numeric:tabular-nums}
+.cdr b small{font-family:var(--body);font-stretch:100%;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.cdr.soon{color:var(--p-orange)}
 button.bill{text-align:center;padding:4px 10px;border-radius:12px}
 button.bill:active{background:var(--accent-soft)}
-.bill .ed{display:flex;width:fit-content;align-items:center;gap:5px;margin:7px auto 0;height:30px;padding:0 12px;border-radius:999px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--accent);font-size:12.5px;font-weight:700;font-style:normal;font-family:var(--body)}
-.bill .ed svg{width:14px;height:14px}
-button.bill:hover .ed{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.bill .ed{display:inline-grid;place-items:center;margin-left:5px;vertical-align:-2px;color:var(--accent)}
+.bill .ed svg{width:15px;height:15px}
+button.bill:active .ed{opacity:.6}
 .bill .own{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;font-style:normal}
 .today-pill{white-space:nowrap;display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:3px;font-family:var(--body);text-transform:none}
 
@@ -511,7 +520,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left}
 
   <section class="hello">
     <p class="eyebrow">Las cuentas de la casa</p>
-    <h1>Hola, <em>casita</em> 🏡</h1>
+    <div class="hello-row"><h1>Hola, <em>casita</em> 🏡</h1><span id="cdSlot"></span></div>
     <div class="month">
       <button id="prevM" type="button" aria-label="Mes anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <div class="mlbl"><b id="monthLbl"></b><button type="button" class="bill" id="billLbl" aria-label="Cambiar las fechas del banco de este mes"></button></div>
@@ -723,14 +732,23 @@ const penSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function ringSvg(p,c){const r=24,C=2*Math.PI*r;return `<svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="${r}" fill="none" stroke="var(--line)" stroke-width="6"/><circle cx="29" cy="29" r="${r}" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C*p} ${C}"/></svg>`}
 
 /* ---------- encabezado y tarjeta principal ---------- */
+/* anillo con los días que faltan para el cierre: se va vaciando conforme avanza el ciclo */
+function cdRing(k){
+  const left=Math.max(0,dayDiff(todayISO(),endOf(k)));
+  const span=dayDiff(startOf(k),endOf(k))+1,frac=Math.min(1,(left+1)/span);
+  const r=15,C=2*Math.PI*r,txt=left===0?'Hoy cierra el ciclo':left+(left===1?' día':' días')+' para el cierre ('+dayLbl(endOf(k))+')';
+  return `<span class="cdr${left<=3?' soon':''}" title="${txt}" role="img" aria-label="${txt}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${r}" class="t"/><circle cx="18" cy="18" r="${r}" class="p" stroke-dasharray="${(C*frac).toFixed(2)} ${C.toFixed(2)}"/></svg><b>${left}<small>${left===1?'día':'días'}</small></b></span>`;
+}
 function renderTop(){
   const k=mKey();
-  document.getElementById('monthLbl').innerHTML=MESES[viewM]+' '+viewY+(k===realKey?'<span class="today-pill">Este mes</span>':'');
+  document.getElementById('monthLbl').innerHTML=MESES[viewM]+' '+viewY;
+  document.getElementById('cdSlot').innerHTML=cdRing(realKey);
   document.getElementById('prevM').disabled=k<=firstKey();
   const bl=document.getElementById('billLbl'),known=!!(BILL[k]||(S.bill&&S.bill[k])),pay=payOf(k),own=!!(S.bill&&S.bill[k]);
   bl.className='bill'+(known?'':' none');
-  bl.innerHTML=known?`💳 Consumos del <b>${dayLbl(startOf(k))}</b> al <b>${dayLbl(endOf(k))}</b><br>Pago del banco: <b>${pay?longDate(pay).replace(/, \d{4}$/,''):'por cargar'}</b>${own?'<span class="own">A mano</span>':''}<span class="ed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Editar fechas</span>`:'💳 Fechas del banco por cargar<span class="ed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Cargar fechas</span>';
+  bl.innerHTML=known?`💳 Consumos del <b>${dayLbl(startOf(k))}</b> al <b>${dayLbl(endOf(k))}</b><br>Pago del banco: <b>${pay?longDate(pay).replace(/, \d{4}$/,''):'por cargar'}</b>${own?'<span class="own">A mano</span>':''}<span class="ed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></span>`:'💳 Fechas del banco por cargar<span class="ed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></span>';
   bl.onclick=()=>openBill(k);
+
   const fx=fixedPaid(k),vr=varSpent(k),tot=fx+vr,prev=keyAdd(k,-1)<START_KEY?0:monthTotal(keyAdd(k,-1));
   let delta='';
   if(prev>0){const d=(tot-prev)/prev*100;delta=`<span class="delta ${d>0.5?'up':d<-0.5?'down':''}">${d>0.5?'▲':d<-0.5?'▼':'='} ${Math.abs(Math.round(d))}% vs ${MES3[(viewM+11)%12].toLowerCase()}</span>`}
